@@ -1,0 +1,139 @@
+#include <Wire.h>
+
+#include <LiquidCrystal_I2C.h>
+
+
+
+volatile long time;
+
+volatile boolean progress_state;
+
+String serial_input;
+
+volatile int win_state;
+
+
+
+LiquidCrystal_I2C mylcd(0x20,16,2);
+
+void attachInterrupt_fun_2() {
+
+  time = time - 20;
+
+  delay(1000);
+
+}
+
+
+
+void attachInterrupt_fun_3() {
+
+  win_state = 1;
+
+  delay(1000);
+
+}
+
+
+
+void setup(){
+
+  pinMode(0, OUTPUT);
+
+  Serial.begin(9600);
+
+  time = 90;
+
+  progress_state = true;
+
+  serial_input = "off";
+
+  win_state = 0;
+
+  pinMode(2, INPUT);
+
+  pinMode(3, INPUT);
+
+  attachInterrupt(digitalPinToInterrupt(2),attachInterrupt_fun_2,RISING);
+
+  attachInterrupt(digitalPinToInterrupt(3),attachInterrupt_fun_3,RISING);
+
+}
+
+
+
+void loop(){
+
+  if (progress_state == true) {
+
+    while (time > 0) {
+
+      if (win_state == 1) {
+
+        break;
+
+
+
+      }
+
+      tone(0,131);
+
+      mylcd.setCursor(0, 0);
+
+      mylcd.print("rest time:");
+
+      mylcd.setCursor(0, 1);
+
+      mylcd.print(String("      ") + String(String(String("")+time) + String("s")));
+
+      delay(1000);
+
+      noTone(0);
+
+      time = time - 1;
+
+    }
+
+
+
+  }
+
+  if (time <= 0 && progress_state == true) {
+
+    mylcd.clear();
+
+    mylcd.setCursor(0, 0);
+
+    mylcd.print("OH NO!");
+
+    mylcd.setCursor(0, 1);
+
+    mylcd.print("BOOM!!!");
+
+    progress_state = false;
+
+
+
+  }
+
+  if (win_state == 1 && progress_state == true) {
+
+    progress_state = false;
+
+    mylcd.clear();
+
+    mylcd.setCursor(0, 0);
+
+    mylcd.print("oh you win!!");
+
+    mylcd.setCursor(0, 1);
+
+    mylcd.print("nice!!");
+
+
+
+  }
+
+
+
+}
